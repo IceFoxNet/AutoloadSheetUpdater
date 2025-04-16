@@ -11,5 +11,5 @@ args_desc = (
 args_std = (
     2, 
     10_000,
-    ''
+    'https://disk.yandex.ru/i/G_BtG2qVR5kn-g | https://disk.yandex.ru/i/v-C-CzkcpdBA5A'
 )
