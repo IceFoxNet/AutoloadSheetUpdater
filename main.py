@@ -57,6 +57,6 @@ def main(start: int, end: int, link: str, setup: dict):
             avito_status[idx] = [response_item.get('avito_status')]
         except:
             continue
-    worksheet.update(results, f'G{start}:G{end}')
+    worksheet.update(results, f'H{start}:H{end}')
     worksheet.update(avito_id, f'A{start}:A{end}')
     worksheet.update(avito_status, f'B{start}:B{end}')
