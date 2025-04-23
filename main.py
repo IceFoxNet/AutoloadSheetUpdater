@@ -60,3 +60,8 @@ def main(start: int, end: int, link: str, setup: dict):
     worksheet.update(results, f'H{start}:H{end}')
     worksheet.update(avito_id, f'A{start}:A{end}')
     worksheet.update(avito_status, f'B{start}:B{end}')
+    headers = {
+        'Authorization': f'Bearer {avito_token}'
+    }
+    response = requests.post('https://api.avito.ru/autoload/v1/upload', headers=headers)
+    if not response.ok: raise SystemError(f'Ошибка при попытке запустить автовыгрузку ({response.status_code}) {response.json()}')
