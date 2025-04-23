@@ -42,6 +42,7 @@ def main(start: int, end: int, link: str, setup: dict):
             if link is not None:
                 results[idx][0] = results[idx][0] + ' | ' + link
         except yadisk.exceptions.PathNotFoundError:
+            results[idx] = [None]
             continue
         try:
             headers = {
@@ -56,6 +57,8 @@ def main(start: int, end: int, link: str, setup: dict):
             avito_id[idx] = [response_item.get('avito_id')]
             avito_status[idx] = [response_item.get('avito_status')]
         except:
+            avito_id[idx] = [None]
+            avito_status[idx] = [None]
             continue
     worksheet.update(results, f'H{start}:H{end}')
     worksheet.update(avito_id, f'A{start}:A{end}')
