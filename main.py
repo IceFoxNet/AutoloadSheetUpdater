@@ -22,11 +22,11 @@ def main(start: int, end: int, link: str, setup: dict):
     response = requests.post('https://api.avito.ru/token', params=avito_params)
     response_data: dict = response.json()
     avito_token = response_data.get('access_token')
-    data = list(filter(lambda x: x.value != '', worksheet.range(f'F{start}:F{end}')))
-    results = list(map(lambda x: [x.value], worksheet.range(f'G{start}:G{end}')))
+    data = list(filter(lambda x: x.value != '', worksheet.range(f'G{start}:G{end}')))
+    results = list(map(lambda x: [x.value], worksheet.range(f'H{start}:H{end}')))
     avito_id = list(map(lambda x: [x.value], worksheet.range(f'A{start}:A{end}')))
     avito_status = list(map(lambda x: [x.value], worksheet.range(f'B{start}:B{end}')))
-    identifiers = worksheet.range(f'C{start}:C{end}')
+    identifiers = worksheet.range(f'D{start}:D{end}')
     for idx in range(len(data)):
         item = data[idx].value
         if item == '': continue
