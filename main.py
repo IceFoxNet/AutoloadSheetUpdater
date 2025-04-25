@@ -33,7 +33,7 @@ def main(start: int, end: int, link: str, setup: dict):
         identifier = identifiers[idx].value
         print(f'Работаем со строкой  {idx+1} (/Авито/{item}) из {len(data)}')
         try:
-            files = list(yandex.listdir(f'/Авито/{item}'))[:9]
+            files = list(yandex.listdir(f'/Авито/{item}'))[:10-len(link.split('|'))]
             if any(file.public_url is None for file in files):
                 for file in files:
                     file.publish()
@@ -41,7 +41,7 @@ def main(start: int, end: int, link: str, setup: dict):
             results[idx] = [' | '.join(file.public_url.replace('yadi.sk', 'disk.yandex.ru') for file in files)]
             if link is not None:
                 results[idx][0] = results[idx][0] + ' | ' + link
-        except yadisk.exceptions.PathNotFoundError:
+        except:
             results[idx] = [None]
             continue
         try:
