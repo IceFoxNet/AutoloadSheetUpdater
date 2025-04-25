@@ -15,7 +15,7 @@ def main(start: int, end: int, link: str, setup: dict):
         validators.url(link)
     except:
         raise SystemError('Ошибка валидации: неверная ссылка')
-    spreadsheet: gspread.spreadsheet.Spreadsheet = setup.get('GoogleSheet')
+    spreadsheet: gspread.spreadsheet.Spreadsheet = setup.get('AutoloadSheet')
     worksheet = spreadsheet.worksheet('Автовыгрузка Avito')
     avito_params: dict = setup.get('AvitoParams')
     yandex: yadisk.YaDisk = setup.get('YandexDisk')
