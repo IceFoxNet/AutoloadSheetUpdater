@@ -19,6 +19,7 @@ def main(start: int, end: int, link: str, setup: dict):
     worksheet = spreadsheet.worksheet('Автовыгрузка Avito')
     avito_params: dict = setup.get('AvitoParams')
     yandex: yadisk.YaDisk = setup.get('YandexDisk')
+    app_script_runner = setup.get('AppScriptsRunner')
     response = requests.post('https://api.avito.ru/token', params=avito_params)
     response_data: dict = response.json()
     avito_token = response_data.get('access_token')
@@ -66,5 +67,6 @@ def main(start: int, end: int, link: str, setup: dict):
     headers = {
         'Authorization': f'Bearer {avito_token}'
     }
+    app_script_runner('RENDER')
     response = requests.post('https://api.avito.ru/autoload/v1/upload', headers=headers)
     if not response.ok: raise SystemError(f'Ошибка при попытке запустить автовыгрузку ({response.status_code}) {response.json()}')
