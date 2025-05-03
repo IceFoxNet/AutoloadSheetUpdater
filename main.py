@@ -2,7 +2,7 @@ import os
 
 while True:
     try:
-        import yadisk, requests, validators, gspread
+        import yadisk, requests, validators, gspread, time
     except ImportError as e:
         package = e.msg.split()[-1][1:-1]
         os.system(f'python -m pip install {package}')
@@ -64,9 +64,15 @@ def main(start: int, end: int, link: str, setup: dict):
     worksheet.update(results, f'H{start}:H{end}')
     worksheet.update(avito_id, f'A{start}:A{end}')
     worksheet.update(avito_status, f'B{start}:B{end}')
+    time.sleep(120)
     headers = {
         'Authorization': f'Bearer {avito_token}'
     }
     app_script_runner('RENDER')
+    time.sleep(60)
     response = requests.post('https://api.avito.ru/autoload/v1/upload', headers=headers)
     if not response.ok: raise SystemError(f'Ошибка при попытке запустить автовыгрузку ({response.status_code}) {response.json()}')
+
+if __name__ == '__main__':
+    from Setup.setup import setup
+    main(3, 10_000, 'https://disk.yandex.ru/i/G_BtG2qVR5kn-g | https://disk.yandex.ru/i/v-C-CzkcpdBA5A', setup)
