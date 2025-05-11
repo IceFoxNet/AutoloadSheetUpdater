@@ -2,7 +2,8 @@ import os
 
 while True:
     try:
-        import yadisk, requests, validators, gspread, time
+        import yadisk, requests, gspread, time, pytz
+        from datetime import datetime, timedelta
     except ImportError as e:
         package = e.msg.split()[-1][1:-1]
         os.system(f'python -m pip install {package}')
@@ -11,10 +12,6 @@ while True:
 
 def main(start: int, end: int, link: str, setup: dict):
     if start < 2: start = 2
-    try:
-        validators.url(link)
-    except:
-        raise SystemError('Ошибка валидации: неверная ссылка')
     spreadsheet: gspread.spreadsheet.Spreadsheet = setup.get('AutoloadSheet')
     worksheet = spreadsheet.worksheet('Автовыгрузка Avito')
     avito_params: dict = setup.get('AvitoParams')
@@ -27,12 +24,21 @@ def main(start: int, end: int, link: str, setup: dict):
     results = list(map(lambda x: [x.value], worksheet.range(f'H{start}:H{end}')))
     avito_id = list(map(lambda x: [x.value], worksheet.range(f'A{start}:A{end}')))
     avito_status = list(map(lambda x: [x.value], worksheet.range(f'B{start}:B{end}')))
+    begins = list(map(lambda x: [x.value], worksheet.range(f'I{start}:I{end}')))
     identifiers = worksheet.range(f'D{start}:D{end}')
+    hundred_counter = 0
+    actual_date = datetime.now(pytz.timezone('Europe/Moscow'))
     for idx in range(len(data)):
         item = data[idx].value
         if item == '': continue
         identifier = identifiers[idx].value
         print(f'Работаем со строкой  {idx+1} (/Авито/{item}) из {len(data)}')
+        if not begins[idx][0]:
+            begins[idx] = [actual_date.strftime('%d.%m.%Y')]
+            hundred_counter += 1
+            if hundred_counter == 100:
+                hundred_counter = 0
+                actual_date += timedelta(days=1)
         try:
             files = list(yandex.listdir(f'/Авито/{item}'))[:10-len(link.split('|'))]
             if any(file.public_url is None for file in files):
