@@ -1,10 +1,10 @@
+from scope_db import DBConnect
 import os
 
 while True:
     try:
         import requests, gspread, time, pytz
         from datetime import datetime, timedelta
-        from database import DBConnect
     except ImportError as e:
         package = e.msg.split()[-1][1:-1]
         os.system(f'python -m pip install {package}')
