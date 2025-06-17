@@ -2,8 +2,9 @@ import os
 
 while True:
     try:
-        import yadisk, requests, gspread, time, pytz
+        import requests, gspread, time, pytz
         from datetime import datetime, timedelta
+        from database import DBConnect
     except ImportError as e:
         package = e.msg.split()[-1][1:-1]
         os.system(f'python -m pip install {package}')
@@ -13,9 +14,9 @@ while True:
 def main(start: int, end: int, link: str, setup: dict):
     if start < 2: start = 2
     spreadsheet: gspread.spreadsheet.Spreadsheet = setup.get('AutoloadSheet')
+    dbconn = DBConnect(setup.get('AppInfo'))
     worksheet = spreadsheet.worksheet('Автовыгрузка Avito')
     avito_params: dict = setup.get('AvitoParams')
-    yandex: yadisk.YaDisk = setup.get('YandexDisk')
     app_script_runner = setup.get('AppScriptsRunner')
     response = requests.post('https://api.avito.ru/token', params=avito_params)
     response_data: dict = response.json()
@@ -39,18 +40,20 @@ def main(start: int, end: int, link: str, setup: dict):
             if hundred_counter == 100:
                 hundred_counter = 0
                 actual_date += timedelta(days=1)
-        try:
-            files = list(yandex.listdir(f'/Авито/{item}'))[:10-len(link.split('|'))]
-            if any(file.public_url is None for file in files):
-                for file in files:
-                    file.publish()
-                files = list(yandex.listdir(f'/Авито/{item}'))[:10-len(link.split('|'))]
-            results[idx] = [' | '.join(file.public_url.replace('yadi.sk', 'disk.yandex.ru') for file in files)]
-            if link is not None:
-                results[idx][0] = results[idx][0] + ' | ' + link
-        except:
-            results[idx] = [None]
-            continue
+        
+        results[idx][0] = ' | '.join(dbconn.get_media_urls_by_resource_id(item)) + ' | ' + link
+    worksheet.update(results, f'H{start}:H{end}')
+    worksheet.update(begins, f'I{start}:I{end}')
+    time.sleep(120)
+    headers = {
+        'Authorization': f'Bearer {avito_token}'
+    }
+    app_script_runner('RENDER')
+    time.sleep(120)
+    response = requests.post('https://api.avito.ru/autoload/v1/upload', headers=headers)
+    if not response.ok: raise SystemError(f'Ошибка при попытке запустить автовыгрузку ({response.status_code}) {response.json()}')
+    time.sleep(60*60)
+    for idx in range(len(data)):
         try:
             headers = {
                 'Authorization': f'Bearer {avito_token}'
@@ -67,19 +70,10 @@ def main(start: int, end: int, link: str, setup: dict):
             avito_id[idx] = [None]
             avito_status[idx] = [None]
             continue
-    worksheet.update(results, f'H{start}:H{end}')
     worksheet.update(avito_id, f'A{start}:A{end}')
     worksheet.update(avito_status, f'B{start}:B{end}')
-    worksheet.update(begins, f'I{start}:I{end}')
-    time.sleep(120)
-    headers = {
-        'Authorization': f'Bearer {avito_token}'
-    }
-    app_script_runner('RENDER')
-    time.sleep(120)
-    response = requests.post('https://api.avito.ru/autoload/v1/upload', headers=headers)
-    if not response.ok: raise SystemError(f'Ошибка при попытке запустить автовыгрузку ({response.status_code}) {response.json()}')
+    dbconn.close()
 
 if __name__ == '__main__':
     from Setup.setup import setup
-    main(3, 10_000, 'https://disk.yandex.ru/i/G_BtG2qVR5kn-g | https://disk.yandex.ru/i/v-C-CzkcpdBA5A', setup)
+    main(3, 5, 'https://disk.yandex.ru/i/G_BtG2qVR5kn-g | https://disk.yandex.ru/i/v-C-CzkcpdBA5A', setup)
