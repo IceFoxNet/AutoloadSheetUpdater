@@ -83,7 +83,7 @@ def main(start: int, end: int, link: str, setup: dict):
     actual_date = datetime.now(pytz.timezone('Europe/Moscow'))
     for idx in range(len(data)):
         item = data[idx].value
-        if item == '': continue
+        if not item: continue
         identifier = identifiers[idx].value
         print(f'Работаем со строкой  {idx+1} (/Авито/{item}) из {len(data)}')
         if not begins[idx][0]:
@@ -93,7 +93,7 @@ def main(start: int, end: int, link: str, setup: dict):
                 hundred_counter = 0
                 actual_date += timedelta(days=1)
         
-        results[idx][0] = ' | '.join(dbconn.get_media_urls_by_resource_id(item)) + ' | ' + link
+        results[idx][0] = ' | '.join(x for x in dbconn.get_media_urls_by_resource_id(item) if x is not None) + ' | ' + link
     worksheet.update(results, f'H{start}:H{end}')
     worksheet.update(begins, f'I{start}:I{end}')
     time.sleep(120)
