@@ -26,7 +26,7 @@ class DBConnect:
         self.appVer = appInfo.get('AppVer')
         self.id = appInfo.get('DBID')
         try:
-            engine = create_engine(url=f"postgresql+psycopg2://{self.login}:{self.password}@scope-db-lego-invest-group.db-msk0.amvera.tech:5432/LEGOSystems")
+            engine = create_engine(url=f"postgresql+psycopg2://{self.login}:{self.password}@scope-db-lego-invest-group.db-msk0.amvera.tech:5432/LEGOSystems", pool_pre_ping=True)
             Session = sessionmaker(bind=engine)
             self.session = Session()
         except Exception as e:
@@ -92,8 +92,13 @@ def main(start: int, end: int, link: str, setup: dict):
             if hundred_counter == 100:
                 hundred_counter = 0
                 actual_date += timedelta(days=1)
-        
-        results[idx][0] = ' | '.join(x for x in dbconn.get_media_urls_by_resource_id(item) if x is not None) + ' | ' + link
+        media_links = dbconn.get_media_urls_by_resource_id(item)
+        media_links = [x for x in dbconn.get_media_urls_by_resource_id(item) if x is not None]
+        if media_links:
+            results[idx][0] = ' | '.join(media_links) + ' | ' + link
+        else:
+            results[idx][0] = ''
+        time.sleep(0.01)
     worksheet.update(results, f'H{start}:H{end}')
     worksheet.update(begins, f'I{start}:I{end}')
     time.sleep(120)
